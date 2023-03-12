@@ -9,6 +9,7 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const { body } = require('express-validator');
 const helmet = require('helmet');
+const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = 'jwt-secret123';
 const USERS = [
@@ -16,9 +17,13 @@ const USERS = [
     id: '1234567890',
     name: 'John Doe',
     iat: Math.floor(Date.now() / 1000) - 30,
-    exp: Math.floor(Date.now() / 1000) + (60 * 60),
+    exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 30), // 1 month valid
   }
 ];
+
+// const token = jwt.sign(USERS[0], JWT_SECRET);
+// console.log(token);
+
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR);
@@ -37,7 +42,7 @@ passport.use(new JwtStrategy(jwtOptions, async (payload, done) => {
 
     // TODO: connect with DB later
     // const user = await User.findById(payload.sub);
-    const user = USERS.find(u => u.id === payload.sub);
+    const user = USERS.find(u => u.id === payload.id);
 
     if (!user) {
       return done(null, false);
@@ -79,7 +84,20 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 app.post('/upload', uploadFileValidation, upload.single('file'), (req, res) => {
-  res.send({ message: 'File uploaded successfully' });
+  if (!req.file) {
+    return res.status(400).send({ message: 'No file uploaded' });
+  }
+
+  const { originalname, size, lastModifiedDate } = req.file;
+
+  const file = {
+    name: originalname,
+    url: `http://localhost:5001/uploads/${originalname}`,
+    size,
+    createdDate: lastModifiedDate ? lastModifiedDate : new Date(),
+  };
+
+  res.send({ message: 'File uploaded successfully', file });
 });
 
 app.get('/files', passport.authenticate('jwt', { session: false }), (req, res) => {
@@ -101,7 +119,7 @@ app.get('/files', passport.authenticate('jwt', { session: false }), (req, res) =
         name: filename,
         url: `http://localhost:5001/uploads/${filename}`,
         size: fileStats.size,
-        createdDate: fileStats.birthtime
+        createdDate: fileStats.birthtime,
       };
     });
     res.send({ files: fileList });
