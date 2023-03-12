@@ -88,13 +88,13 @@ app.post('/upload', uploadFileValidation, upload.single('file'), (req, res) => {
     return res.status(400).send({ message: 'No file uploaded' });
   }
 
-  const { originalname, size, lastModifiedDate } = req.file;
+  const { originalname, size, lastModified } = req.file;
 
   const file = {
     name: originalname,
     url: `http://localhost:5001/uploads/${originalname}`,
     size,
-    createdDate: lastModifiedDate ? lastModifiedDate : new Date(),
+    lastModified: lastModified ? lastModified : new Date().getTime(),
   };
 
   res.send({ message: 'File uploaded successfully', file });
@@ -115,11 +115,12 @@ app.get('/files', passport.authenticate('jwt', { session: false }), (req, res) =
 
     const fileList = files.map((filename) => {
       const fileStats = fs.statSync(path.join(UPLOADS_DIR, filename));
+
       return {
         name: filename,
         url: `http://localhost:5001/uploads/${filename}`,
         size: fileStats.size,
-        createdDate: fileStats.birthtime,
+        lastModified: fileStats.birthtimeMs,
       };
     });
     res.send({ files: fileList });

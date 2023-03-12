@@ -22,7 +22,7 @@
             <td>{{ file.name }}</td>
             <td>{{ getFileSize(file.size) }}</td>
             <td>{{ getFileType(file.name) }}</td>
-            <td>{{ getFileCreatedDate(file.createdDate) }}</td>
+            <td>{{ getFileCreatedDate(file.lastModified) }}</td>
           </tr>
         </tbody>
         <tbody v-else>
@@ -38,35 +38,44 @@
 </template>
 
 
-<script>
+<script lang="ts">
 import axios from 'axios';
 import path from 'path';
+import { Component, Vue } from 'vue-property-decorator';
 
 const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE2Nzg2MTE0NjUsImV4cCI6MTY4MTIwMzQ5NX0.ndrKyHcKmOY1_OBNLc_862BuLd8OiofaALkb1F_P-_I';
 
-export default {
-  name: 'Home',
-  data() {
-    return {
-      uploadedFiles: [],
-      selectedFile: null,
-      isUploading: false,
-    };
-  },
-  methods: {
-    handleFileSelected(event) {
-      console.log("WHAT ??", event.target.files[0])
-      this.selectedFile = event.target.files[0];
-    },
-    handleUpload() {
-      if (!this.selectedFile) {
-        alert('Please select a file');
-        return;
-      }
-      if (this.isUploading) {
-        return;
-      }
+@Component({
+  components: {},
+})
 
+export default class Home extends Vue {
+  uploadedFiles: Array<File> = [];
+  isUploading: boolean = false;
+  selectedFile: File | null = null;
+  
+  handleFileSelected = (event: Event): void => {
+    if (!event.target) {
+      console.error('Event target is null');
+      return;
+    }
+    const input = event.target as HTMLInputElement;
+    if (!input.files) {
+      console.error('No file selected');
+      return;
+    }
+
+    this.selectedFile = input.files[0];
+  }
+  
+  handleUpload = (): void => {
+    if (!this.selectedFile) {
+      alert('Please select a file');
+      return;
+    }
+
+    // Check if selectedFile is null before using it
+    if (this.selectedFile !== null) {
       this.isUploading = true;
       const formData = new FormData();
       formData.append('file', this.selectedFile);
@@ -78,58 +87,63 @@ export default {
             'Authorization': `Bearer ${TOKEN}`
           },
         })
-        .then((response) => {
-          this.uploadedFiles.push(response.data.file);
+        .then((response: any) => {
+          Vue.set(this.uploadedFiles, this.uploadedFiles.length, response.data.file);
           this.selectedFile = null;
         })
-        .catch((error) => {
+        .catch((error: any) => {
           console.log(error);
         }).finally(() => {
           this.isUploading = false
         });
-    },
-    fetchFiles() {
-      axios
-        .get('http://localhost:5001/files', {
-          headers: {
-            'Authorization': `Bearer ${TOKEN}`
-          }
-        })
-        .then((response) => {
-          console.log(response.data)
-          this.uploadedFiles = response.data.files;
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-    },
-    getFileSize(size) {
-      if (size === 0) return '0 Bytes';
-      const k = 1024;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-      const i = Math.floor(Math.log(size) / Math.log(k));
-      const fileSize = parseFloat((size / Math.pow(k, i)).toFixed(2));
-      return `${fileSize} ${sizes[i]}`;
-    },
-    getFileType(filename) {
-      return path.extname(filename).substring(1).toUpperCase();
-    },
-    getFileCreatedDate(createdDate) {
-      const date = new Date(createdDate);
-      const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June', 'July',
-        'August', 'September', 'October', 'November', 'December'
-      ];
-      const year = date.getFullYear();
-      const month = monthNames[date.getMonth()];
-      const day = date.getDate();
-      return `${month} ${day}, ${year}`;
     }
-  },
-  mounted() {
+  }
+
+  fetchFiles(): void {
+    axios
+      .get('http://localhost:5001/files', {
+        headers: {
+          'Authorization': `Bearer ${TOKEN}`
+        }
+      })
+      .then((response: any) => {
+        console.log(response.data)
+        this.uploadedFiles = response.data.files;
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+  }
+  
+  getFileSize(size: number): string {
+    if (size === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const i = Math.floor(Math.log(size) / Math.log(k));
+    const fileSize = parseFloat((size / Math.pow(k, i)).toFixed(2));
+    return `${fileSize} ${sizes[i]}`;
+  }
+  
+  getFileType(filename: string): string {
+    return path.extname(filename).substring(1).toUpperCase();
+  }
+  
+  getFileCreatedDate(lastModified: number) {
+    const date = new Date(lastModified);
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June', 'July',
+      'August', 'September', 'October', 'November', 'December'
+    ];
+    const year = date.getFullYear();
+    const month = monthNames[date.getMonth()];
+    const day = date.getDate();
+    return `${month} ${day}, ${year}`;
+  }
+  
+  mounted(): void {
     this.fetchFiles();
-  },
-};
+  }
+}
 </script>
 
 <style>
