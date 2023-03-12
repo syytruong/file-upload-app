@@ -14,6 +14,8 @@
 <script>
 import axios from 'axios';
 
+const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNjc4NjA1Mzg0LCJleHAiOjE2Nzg2MDkwMTR9.uxwUk60nuOgMGvzZuIC5v0S19-YKKFnxOPKRC2YAhYE';
+
 export default {
   name: 'Home',
   data() {
@@ -30,6 +32,7 @@ export default {
         .post('http://localhost:5001/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${TOKEN}`
           },
         })
         .then((response) => {
@@ -45,13 +48,17 @@ export default {
     },
     fetchFiles() {
       axios
-        .get('http://localhost:5001/files')
+        .get('http://localhost:5001/files', {
+          headers: {
+            'Authorization': `Bearer ${TOKEN}`
+          }
+        })
         .then((response) => {
-          this.uploadedFiles = response.data;
+          this.uploadedFiles = response.data.files;
         })
         .catch((error) => {
           console.log(error);
-        });
+        })
     },
   },
   mounted() {
