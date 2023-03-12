@@ -4,7 +4,7 @@
       <h1 style="margin-bottom: 20px">Upload File Applications</h1>
       <div class="file-input">
         <input type="file" ref="fileInput" @change="handleFileSelected">
-        <button class="upload-btn" @click="handleUpload" :disabled="isUploading">Upload</button>
+        <button class="upload-btn" @click="handleUpload" :disable="isUploading">Upload</button>
       </div>
     </div>
     <div class="file-list">
@@ -54,7 +54,7 @@ export default class Home extends Vue {
   isUploading: boolean = false;
   selectedFile: File | null = null;
   
-  handleFileSelected = (event: Event): void => {
+  handleFileSelected(event: Event): void {
     if (!event.target) {
       console.error('Event target is null');
       return;
@@ -68,18 +68,17 @@ export default class Home extends Vue {
     this.selectedFile = input.files[0];
   }
   
-  handleUpload = (): void => {
+  handleUpload(): void {
     if (!this.selectedFile) {
       alert('Please select a file');
       return;
     }
 
     // Check if selectedFile is null before using it
-    if (this.selectedFile !== null) {
+    if (this.selectedFile !== null && !this.isUploading) {
       this.isUploading = true;
       const formData = new FormData();
       formData.append('file', this.selectedFile);
-      this.isUploading = true;
       axios
         .post('http://localhost:5001/upload', formData, {
           headers: {
@@ -88,8 +87,10 @@ export default class Home extends Vue {
           },
         })
         .then((response: any) => {
-          Vue.set(this.uploadedFiles, this.uploadedFiles.length, response.data.file);
+          const newFile = response.data.file;
+          this.uploadedFiles.push(newFile);
           this.selectedFile = null;
+          Vue.set(this.uploadedFiles, this.uploadedFiles.length - 1, newFile);
         })
         .catch((error: any) => {
           console.log(error);
@@ -107,7 +108,6 @@ export default class Home extends Vue {
         }
       })
       .then((response: any) => {
-        console.log(response.data)
         this.uploadedFiles = response.data.files;
       })
       .catch((error: any) => {
