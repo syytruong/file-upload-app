@@ -23,13 +23,18 @@ app.post('/upload', upload.single('file'), (req, res) => {
 });
 
 app.get('/files', (req, res) => {
-  const directoryPath = path.join(__dirname, 'uploads');
-  fs.readdir(directoryPath, (err, files) => {
+  fs.readdir('uploads', (err, files) => {
     if (err) {
-      res.status(500).send({ message: 'Error retrieving files' });
-    } else {
-      res.send(files);
+      console.error(err);
+      res.status(500).send({ message: 'Failed to read uploads directory' });
+      return;
     }
+    const fileList = files.map((filename) => ({
+      name: filename,
+      url: `http://localhost:5001/uploads/${filename}`,
+      size: fs.statSync(path.join('uploads', filename)).size,
+    }));
+    res.send({ files: fileList });
   });
 });
 
