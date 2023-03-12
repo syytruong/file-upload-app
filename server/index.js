@@ -22,6 +22,17 @@ app.post('/upload', upload.single('file'), (req, res) => {
   res.send({ message: 'File uploaded successfully' });
 });
 
+app.get('/files', (req, res) => {
+  const directoryPath = path.join(__dirname, 'uploads');
+  fs.readdir(directoryPath, (err, files) => {
+    if (err) {
+      res.status(500).send({ message: 'Error retrieving files' });
+    } else {
+      res.send(files);
+    }
+  });
+});
+
 app.listen(5001, () => {
   console.log('Server listening on port 5001');
 });
