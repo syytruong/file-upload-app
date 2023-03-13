@@ -10,13 +10,9 @@ This is a file upload application built with Vue.js and Express.js. The app allo
 2. Navigate to the server directory: cd file-upload-app
 3. Install dependencies: npm install
 ```
-#### Running the Server
-```
-npm run server
-```
-
-
-#### Running the Client
+#### Running the app
 ```
 npm run dev
 ```
+
+

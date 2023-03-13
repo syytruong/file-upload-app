@@ -4,7 +4,7 @@
       <h1 style="margin-bottom: 20px">Upload File Applications</h1>
       <div class="file-input">
         <input type="file" ref="fileInput" @change="handleFileSelected">
-        <button class="upload-btn" @click="handleUpload" :disable="isUploading">Upload</button>
+        <button class="upload-btn" @click="handleUpload" :disabled="isUploading">Upload</button>
       </div>
     </div>
     <div class="file-list">
@@ -18,7 +18,7 @@
           </tr>
         </thead>
         <tbody v-if="uploadedFiles.length > 0">
-          <tr v-for="file in uploadedFiles" :key="file.name">
+          <tr v-for="(file, index) in uploadedFiles" :key="`${file.name}-${index}`">
             <td>{{ file.name }}</td>
             <td>{{ getFileSize(file.size) }}</td>
             <td>{{ getFileType(file.name) }}</td>
@@ -34,6 +34,36 @@
         </tbody>
       </table>
     </div>
+
+    <v-snackbar
+      v-model="snackbar"
+      multi-line
+      top
+      right
+      outlined
+      :color="snackbarColor"
+    >
+      {{ snackbarText }}
+      <template v-slot:action="{ attrs }">
+        <v-progress-circular
+          v-if="isUploading"
+          color="blue-lighten-3"
+          indeterminate
+        >
+        </v-progress-circular>
+        <v-btn
+          v-else
+          :color="snackbarColor"
+          v-bind="attrs"
+          icon
+          @click="hideMessage"
+        >
+          <v-icon>
+            mdi-close
+          </v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -53,6 +83,21 @@ export default class Home extends Vue {
   uploadedFiles: Array<File> = [];
   isUploading: boolean = false;
   selectedFile: File | null = null;
+  snackbar: boolean = false;
+  snackbarColor: string = '';
+  snackbarText: string = '';
+
+  showMessage(text: string, type: string): void {
+    this.snackbarText = text;
+    this.snackbarColor = type;
+    this.snackbar = true;
+  }
+
+  hideMessage(): void {
+    this.snackbar = false;
+    this.snackbarText = '';
+    this.snackbarColor = '';
+  }
   
   handleFileSelected(event: Event): void {
     if (!event.target) {
@@ -70,13 +115,14 @@ export default class Home extends Vue {
   
   handleUpload(): void {
     if (!this.selectedFile) {
-      alert('Please select a file');
+      this.showMessage('Please select a file', 'warning');
       return;
     }
 
     // Check if selectedFile is null before using it
     if (this.selectedFile !== null && !this.isUploading) {
       this.isUploading = true;
+      this.showMessage('File uploading', 'info');
       const formData = new FormData();
       formData.append('file', this.selectedFile);
       axios
@@ -91,8 +137,12 @@ export default class Home extends Vue {
           this.uploadedFiles.push(newFile);
           this.selectedFile = null;
           Vue.set(this.uploadedFiles, this.uploadedFiles.length - 1, newFile);
+          this.showMessage('Upload file success', 'success');
+          // @ts-ignore
+          this.$refs.fileInput.value = null;
         })
         .catch((error: any) => {
+          this.showMessage('Upload file error', 'error');
           console.log(error);
         }).finally(() => {
           this.isUploading = false
@@ -146,7 +196,7 @@ export default class Home extends Vue {
 }
 </script>
 
-<style>
+<style scoped>
   .file-uploader {
     display: flex;
     justify-content: center;

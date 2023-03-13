@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nuxt",
+    "dev": "concurrently --kill-others \"nuxt\" \"nodemon server/index.js\"",
     "server": "nodemon server/index.js",
     "build": "nuxt build",
     "start": "nuxt start",
@@ -34,6 +34,7 @@
     "@nuxt/types": "^2.15.8",
     "@nuxt/typescript-build": "^2.1.0",
     "@nuxtjs/vuetify": "^1.12.3",
+    "concurrently": "^7.6.0",
     "nodemon": "^2.0.21"
   }
 }
