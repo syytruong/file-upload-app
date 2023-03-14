@@ -126,7 +126,7 @@ export default class Home extends Vue {
       const formData = new FormData();
       formData.append('file', this.selectedFile);
       axios
-        .post('http://localhost:5001/upload', formData, {
+        .post(`${process.env.NUXT_ENV_API_ENDPOINT_URL}/upload`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             'Authorization': `Bearer ${TOKEN}`
@@ -152,7 +152,7 @@ export default class Home extends Vue {
 
   fetchFiles(): void {
     axios
-      .get('http://localhost:5001/files', {
+      .get(`${process.env.NUXT_ENV_API_ENDPOINT_URL}/files`, {
         headers: {
           'Authorization': `Bearer ${TOKEN}`
         }

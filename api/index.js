@@ -53,11 +53,7 @@ passport.use(new JwtStrategy(jwtOptions, async (payload, done) => {
   }
 }));
 
-app.use(cors({
-  origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
+app.use(cors());
 // Use the Passport.js middleware to authenticate requests
 app.use(passport.initialize());
 app.use(passport.authenticate('jwt', { session: false }));
@@ -92,7 +88,7 @@ app.post('/upload', uploadFileValidation, upload.single('file'), (req, res) => {
 
   const file = {
     name: originalname,
-    url: `http://localhost:5001/uploads/${originalname}`,
+    url: `${process.env.NUXT_ENV_API_ENDPOINT_URL}/uploads/${originalname}`,
     size,
     lastModified: lastModified ? lastModified : new Date().getTime(),
   };
@@ -118,7 +114,7 @@ app.get('/files', passport.authenticate('jwt', { session: false }), (req, res) =
 
       return {
         name: filename,
-        url: `http://localhost:5001/uploads/${filename}`,
+        url: `${process.env.NUXT_ENV_API_ENDPOINT_URL}/uploads/${filename}`,
         size: fileStats.size,
         lastModified: fileStats.birthtimeMs,
       };
@@ -127,6 +123,7 @@ app.get('/files', passport.authenticate('jwt', { session: false }), (req, res) =
   });
 });
 
-app.listen(5001, () => {
-  console.log('Server listening on port 5001');
+const PORT = process.env.NUXT_ENV_API_PORT
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });

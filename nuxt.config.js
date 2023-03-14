@@ -66,6 +66,7 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+    vendor: ['axios'],
   },
 
   router: {
@@ -77,4 +78,10 @@ export default {
       }
     ]
   },
+  serverMiddleware: [
+    // API middleware
+    // '~/api/index.js',
+
+    { path: '/api', handler: '~/api/index.js' },
+  ]
 }
