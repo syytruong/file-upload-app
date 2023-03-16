@@ -7,33 +7,8 @@
         <button class="upload-btn" @click="handleUpload" :disabled="isUploading">Upload</button>
       </div>
     </div>
-    <div class="file-list">
-      <table>
-        <thead>
-          <tr>
-            <th>File Name</th>
-            <th>File Size</th>
-            <th>File Type</th>
-            <th>Created Date</th>
-          </tr>
-        </thead>
-        <tbody v-if="uploadedFiles.length > 0">
-          <tr v-for="(file, index) in uploadedFiles" :key="`${file.name}-${index}`">
-            <td>{{ file.name }}</td>
-            <td>{{ getFileSize(file.size) }}</td>
-            <td>{{ getFileType(file.name) }}</td>
-            <td>{{ getFileCreatedDate(file.lastModified) }}</td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="12">
-              <h2 style="text-align: center;">No file uploaded!</h2>
-            </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
+
+    <file-list :uploadedFiles="uploadedFiles" />
 
     <v-snackbar
       v-model="snackbar"
@@ -70,13 +45,13 @@
 
 <script lang="ts">
 import axios from 'axios';
-import path from 'path';
 import { Component, Vue } from 'vue-property-decorator';
+import FileList from '~/components/FileList.vue';
 
 const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE2Nzg2MTE0NjUsImV4cCI6MTY4MTIwMzQ5NX0.ndrKyHcKmOY1_OBNLc_862BuLd8OiofaALkb1F_P-_I';
 
 @Component({
-  components: {},
+  components: {FileList},
 })
 
 export default class Home extends Vue {
@@ -165,31 +140,6 @@ export default class Home extends Vue {
       })
   }
   
-  getFileSize(size: number): string {
-    if (size === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-    const i = Math.floor(Math.log(size) / Math.log(k));
-    const fileSize = parseFloat((size / Math.pow(k, i)).toFixed(2));
-    return `${fileSize} ${sizes[i]}`;
-  }
-  
-  getFileType(filename: string): string {
-    return path.extname(filename).substring(1).toUpperCase();
-  }
-  
-  getFileCreatedDate(lastModified: number) {
-    const date = new Date(lastModified);
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June', 'July',
-      'August', 'September', 'October', 'November', 'December'
-    ];
-    const year = date.getFullYear();
-    const month = monthNames[date.getMonth()];
-    const day = date.getDate();
-    return `${month} ${day}, ${year}`;
-  }
-  
   mounted(): void {
     this.fetchFiles();
   }
@@ -197,15 +147,15 @@ export default class Home extends Vue {
 </script>
 
 <style scoped>
-  .file-uploader {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    flex-direction: column;
-    width: 100%;
-    margin-top: 0;
-    margin-bottom: auto;
-  }
+.file-uploader {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: auto;
+}
 
 .file-picker {
   display: flex;
@@ -256,41 +206,5 @@ export default class Home extends Vue {
 .file-input .upload-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.file-list {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 100%;
-}
-
-.file-list h2 {
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
-.file-list table {
-  border-collapse: collapse;
-  margin-top: 20px;
-  width: 100%;
-}
-
-.file-list table th,
-.file-list table td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: center;
-}
-
-.file-list table th {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.file-list table td {
-  font-size: 16px;
 }
 </style>

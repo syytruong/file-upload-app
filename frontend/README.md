@@ -12,5 +12,11 @@ This is a file upload application built with Vue.js and Express.js. The app allo
 ```
 #### Running the Server
 ```
+npm run server
+```
+
+
+#### Running the Client
+```
 npm run dev
 ```

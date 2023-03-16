@@ -78,10 +78,4 @@ export default {
       }
     ]
   },
-  serverMiddleware: [
-    // API middleware
-    // '~/api/index.js',
-
-    { path: '/api', handler: '~/api/index.js' },
-  ]
 }
