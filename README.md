@@ -34,13 +34,8 @@ backend/
 ├── controllers/
 ├── database/
 ├── middlewares/
-│   ├── errorHandler.js
-│   ├── notFound.js
-│   ├── index.js
 ├── models/
 ├── routes/
-│   ├── files.js
-│   ├── index.js
 ├── services/
 ├── uploads/
 ├── .eslintrc.js
@@ -51,22 +46,11 @@ fronend/
 ├── node_modules/
 ├── .nuxt/
 ├── assets/
-│   ├── variables.scss
 ├── components/
-│   ├── FileList.vue/
 ├── layouts/
-│   ├── default.vue/
-│   ├── error.vue/
 ├── pages/
-│   ├── index.vue/
-│   ├── FileUpload.vue/
 ├── static/
 ├── store/
-│   ├── files/
-│   │   ├── actions.js/
-│   │   ├── getters.js/
-│   │   ├── mutations.js/
-│   │   ├── state.js/
 ├── package.json
 ├── tsconfig.json
 ├── nuxt.config.js
