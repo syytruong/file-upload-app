@@ -34,8 +34,13 @@ backend/
 ├── controllers/
 ├── database/
 ├── middlewares/
+│   ├── errorHandler.js
+│   ├── notFound.js
+│   ├── index.js
 ├── models/
 ├── routes/
+│   ├── files.js
+│   ├── index.js
 ├── services/
 ├── uploads/
 ├── .eslintrc.js
