@@ -3,12 +3,18 @@
     <div class="file-picker">
       <h1 style="margin-bottom: 20px">Upload File Applications</h1>
       <div class="file-input">
-        <input type="file" ref="fileInput" @change="handleFileSelected">
-        <button class="upload-btn" @click="handleUpload" :disabled="isUploading">Upload</button>
+        <input type="file" ref="fileInput" @change="handleFileSelected" />
+        <button
+          class="upload-btn"
+          @click="handleUpload"
+          :disabled="isUploading"
+        >
+          Upload
+        </button>
       </div>
     </div>
 
-    <file-list :uploadedFiles="uploadedFiles" />
+    <file-list :uploadedFiles="$store.getters['files/getFileList']" />
 
     <v-snackbar
       v-model="snackbar"
@@ -33,35 +39,34 @@
           icon
           @click="hideMessage"
         >
-          <v-icon>
-            mdi-close
-          </v-icon>
+          <v-icon> mdi-close </v-icon>
         </v-btn>
       </template>
     </v-snackbar>
   </div>
 </template>
 
-
 <script lang="ts">
-import axios from 'axios';
-import path from 'path';
-import { Component, Vue } from 'vue-property-decorator';
-import FileList from '~/components/FileList.vue';
+import axios from "axios";
+import path from "path";
+import { Component, Vue } from "vue-property-decorator";
+import FileList from "~/components/FileList.vue";
 
-const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE2Nzg2MTE0NjUsImV4cCI6MTY4MTIwMzQ5NX0.ndrKyHcKmOY1_OBNLc_862BuLd8OiofaALkb1F_P-_I';
+const TOKEN =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE2Nzg2MTE0NjUsImV4cCI6MTY4MTIwMzQ5NX0.ndrKyHcKmOY1_OBNLc_862BuLd8OiofaALkb1F_P-_I";
 
 @Component({
-  components: {FileList},
+  components: {
+    FileList,
+  },
 })
-
 export default class FileUpload extends Vue {
-  uploadedFiles: Array<File> = [];
   isUploading: boolean = false;
   selectedFile: File | null = null;
   snackbar: boolean = false;
-  snackbarColor: string = '';
-  snackbarText: string = '';
+  snackbarColor: string = "";
+  snackbarText: string = "";
+
   showMessage(text: string, type: string): void {
     this.snackbarText = text;
     this.snackbarColor = type;
@@ -69,114 +74,104 @@ export default class FileUpload extends Vue {
   }
   hideMessage(): void {
     this.snackbar = false;
-    this.snackbarText = '';
-    this.snackbarColor = '';
+    this.snackbarText = "";
+    this.snackbarColor = "";
   }
-  
+
   handleFileSelected(event: Event): void {
     if (!event.target) {
-      console.error('Event target is null');
+      console.error("Event target is null");
       return;
     }
     const input = event.target as HTMLInputElement;
     if (!input.files) {
-      console.error('No file selected');
+      console.error("No file selected");
       return;
     }
     this.selectedFile = input.files[0];
   }
-  
+
   handleUpload(): void {
     if (!this.selectedFile) {
-      this.showMessage('Please select a file', 'warning');
+      this.showMessage("Please select a file", "warning");
       return;
     }
     // Check if selectedFile is null before using it
     if (this.selectedFile !== null && !this.isUploading) {
       this.isUploading = true;
-      this.showMessage('File uploading', 'info');
+      this.showMessage("File uploading", "info");
       const formData = new FormData();
-      formData.append('file', this.selectedFile);
-      axios
-        .post(`${process.env.NUXT_ENV_API_ENDPOINT_URL}/upload`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${TOKEN}`
-          },
-        })
-        .then((response: any) => {
-          const newFile = response.data.file;
-          this.uploadedFiles.push(newFile);
+      formData.append("file", this.selectedFile);
+      this.$store
+        .dispatch("files/uploadFile", formData)
+        .then(() => {
           this.selectedFile = null;
-          Vue.set(this.uploadedFiles, this.uploadedFiles.length - 1, newFile);
-          this.showMessage('Upload file success', 'success');
+          this.showMessage("Upload file success", "success");
           // @ts-ignore
           this.$refs.fileInput.value = null;
         })
         .catch((error: any) => {
-          this.showMessage('Upload file error', 'error');
+          this.showMessage("Upload file error", "error");
           console.log(error);
-        }).finally(() => {
-          this.isUploading = false
+        })
+        .finally(() => {
+          this.isUploading = false;
         });
     }
   }
-  fetchFiles(): void {
-    axios
-      .get(`${process.env.NUXT_ENV_API_ENDPOINT_URL}/files`, {
-        headers: {
-          'Authorization': `Bearer ${TOKEN}`
-        }
-      })
-      .then((response: any) => {
-        this.uploadedFiles = response.data.files;
-      })
-      .catch((error: any) => {
-        console.log(error);
-      })
-  }
-  
+
   getFileSize(size: number): string {
-    if (size === 0) return '0 Bytes';
+    if (size === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
     const i = Math.floor(Math.log(size) / Math.log(k));
     const fileSize = parseFloat((size / Math.pow(k, i)).toFixed(2));
     return `${fileSize} ${sizes[i]}`;
   }
-  
+
   getFileType(filename: string): string {
     return path.extname(filename).substring(1).toUpperCase();
   }
-  
+
   getFileCreatedDate(lastModified: number) {
     const date = new Date(lastModified);
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June', 'July',
-      'August', 'September', 'October', 'November', 'December'
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
     const year = date.getFullYear();
     const month = monthNames[date.getMonth()];
     const day = date.getDate();
     return `${month} ${day}, ${year}`;
   }
-  
+
   mounted(): void {
-    this.fetchFiles();
+    // this.fetchFiles();
+    this.$store.dispatch("files/fetchFileList");
   }
 }
 </script>
 
 <style scoped>
-  .file-uploader {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    flex-direction: column;
-    width: 100%;
-    margin-top: 0;
-    margin-bottom: auto;
-  }
+.file-uploader {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: auto;
+}
 .file-picker {
   display: flex;
   justify-content: center;
@@ -204,7 +199,7 @@ export default class FileUpload extends Vue {
   border-radius: 10px;
 }
 .file-input .upload-btn {
-  background-color: #008CBA;
+  background-color: #008cba;
   border: none;
   color: white;
   font-size: 18px;
@@ -215,7 +210,7 @@ export default class FileUpload extends Vue {
   transition: all 0.3s ease;
 }
 .file-input .upload-btn:hover {
-  background-color: #0077B3;
+  background-color: #0077b3;
 }
 .file-input .upload-btn:disabled {
   opacity: 0.6;
