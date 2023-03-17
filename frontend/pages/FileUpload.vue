@@ -7,33 +7,8 @@
         <button class="upload-btn" @click="handleUpload" :disabled="isUploading">Upload</button>
       </div>
     </div>
-    <div class="file-list">
-      <table>
-        <thead>
-          <tr>
-            <th>File Name</th>
-            <th>File Size</th>
-            <th>File Type</th>
-            <th>Created Date</th>
-          </tr>
-        </thead>
-        <tbody v-if="uploadedFiles.length > 0">
-          <tr v-for="(file, index) in uploadedFiles" :key="`${file.name}-${index}`">
-            <td>{{ file.name }}</td>
-            <td>{{ getFileSize(file.size) }}</td>
-            <td>{{ getFileType(file.name) }}</td>
-            <td>{{ getFileCreatedDate(file.lastModified) }}</td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="12">
-              <h2 style="text-align: center;">No file uploaded!</h2>
-            </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
+
+    <file-list :uploadedFiles="uploadedFiles" />
 
     <v-snackbar
       v-model="snackbar"
@@ -72,11 +47,15 @@
 import axios from 'axios';
 import path from 'path';
 import { Component, Vue } from 'vue-property-decorator';
+import FileList from '~/components/FileList.vue';
+
 const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE2Nzg2MTE0NjUsImV4cCI6MTY4MTIwMzQ5NX0.ndrKyHcKmOY1_OBNLc_862BuLd8OiofaALkb1F_P-_I';
+
 @Component({
-  components: {},
+  components: {FileList},
 })
-export default class Home extends Vue {
+
+export default class FileUpload extends Vue {
   uploadedFiles: Array<File> = [];
   isUploading: boolean = false;
   selectedFile: File | null = null;

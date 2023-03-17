@@ -9,9 +9,9 @@
           <th>Created Date</th>
         </tr>
       </thead>
-      <tbody v-if="uploadedFiles.length > 0">
+      <tbody v-if="files.length > 0">
         <tr
-          v-for="(file, index) in uploadedFiles"
+          v-for="(file, index) in files"
           :key="`${file.name}-${index}`"
         >
           <td>{{ file.name }}</td>
@@ -42,6 +42,15 @@ import { Component, Vue } from 'vue-property-decorator';
 })
 
 export default class FileList extends Vue {
+  files: Array<File> = [];
+
+  created() {
+    const props = this.$props
+    if (props?.uploadedFiles?.length) {
+      this.files = [...props.uploadedFiles];
+    }
+  }
+
   getFileSize(size: number): string {
     if (size === 0) return '0 Bytes';
     const k = 1024;
