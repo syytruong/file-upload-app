@@ -57,6 +57,11 @@ fronend/
 │   ├── FileUpload.vue/
 ├── static/
 ├── store/
+│   ├── files/
+│   │   ├── actions.js/
+│   │   ├── getters.js/
+│   │   ├── mutations.js/
+│   │   ├── state.js/
 ├── package.json
 ├── tsconfig.json
 ├── nuxt.config.js
